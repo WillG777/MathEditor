@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Equation Editor</title>
+    <link rel="stylesheet" href="mathquill-0.10.1/mathquill.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="mathquill-0.10.1/mathquill.js"></script>
+    <script>
+    var MQ = MathQuill.getInterface(2);
+    </script>
+    <link rel="stylesheet" href="editorStyles.css">
+    <script src="editorScript.js"></script>
+  </head>
+  <body>
+    <header>
+      <button id="btnBorder">Toggle borders</button>
+      <button id="btnExport">Export</button>
+      <button id="btnImport">Import</button>
+      <button id="btnSave">Save</button>
+      <button id="btnLoad">Load</button>
+      <button id="btnRestore">Restore last autosave</button>
+      <div id="exportOutput">
+        <button id="btnHideExport">Close</button>
+        Copy the following text:
+        <p></p>
+      </div>
+      <div id="import">
+        <button id="btnHideImport">Close</button>
+        Paste text here:
+        <input type="text">
+        <button id="btnSubmitImport">Import this</button>
+      </div>
+      <p>
+        Press enter to make a new line. <br>
+        Use the arrow keys or ctrl+up and ctrl+down to move between lines. <br>
+        Use ctrl+/ to make a comment. <br>
+        Use ctrl+backspace (or backspace on an empty line) to delete a line. <br>
+        To print or save to a PDF, use your browser's print feature (ctrl+p). <br>
+        Click the arrow to hide or show this header.
+      </p>
+    </header>
+    <button id="btnHeader">&#x25bc;</button>
+    <div id="title">
+      <textarea placeholder="Title here"></textarea>
+    </div>
+    <main>
+      <div class="field" id="field1">
+      </div>
+    </main>
+  </body>
+</html>
