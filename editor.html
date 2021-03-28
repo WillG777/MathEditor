@@ -20,6 +20,7 @@
       <button id="btnSave">Save</button>
       <button id="btnLoad">Load</button>
       <button id="btnRestore">Restore last autosave</button>
+      <button id="btnSetAuto">Set auto commands</button>
       <div id="exportOutput">
         <button id="btnHideExport">Close</button>
         Copy the following text:
@@ -30,6 +31,12 @@
         Paste text here:
         <input type="text">
         <button id="btnSubmitImport">Import this</button>
+      </div>
+      <div id="autoCommands">
+        <button id="btnHideAutos">Close</button>
+        <p>Current auto commands: <span id="currentAutos"></span></p>
+        <p><input type="text" id="inputAddAuto"><button id="btnAddAuto">Add auto command</button></p>
+        <p><input type="text" id="inputRemoveAuto"><button id="btnRemoveAuto">Remove auto command</button></p>
       </div>
       <p>
         Press enter to make a new line. <br>

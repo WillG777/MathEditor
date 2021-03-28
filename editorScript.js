@@ -4,28 +4,28 @@ var currentField = 'field1';
 var currentIndex = 0;
 var inputs = {ctrl: false, up: false, down: false, slash: false, enter: false, bs: false, s: false};
 var fields = [];
+var autoCommands = localStorage.autoCommands ? JSON.parse(localStorage.autoCommands) : ['pi', 'theta', 'sqrt', 'sum', 'infty'];
 
-function configOptions() {
-  return {
-    leftRightIntoCmdGoes: 'up',
-    charsThatBreakOutOfSupSub: '=<>',
-    autoCommands: 'pi theta sqrt sum int infty',
-    handlers: {
-      enter: onEnter,
-      moveOutOf: dir => {
-        if (dir === MQ.R) moveDown(); else moveUp();
-      },
-      upOutOf: moveUp,
-      downOutOf: moveDown,
-      deleteOutOf: deleteField
-    }
-  };
-}
+const configOptions = () => ({
+  leftRightIntoCmdGoes: 'up',
+  charsThatBreakOutOfSupSub: '=<>',
+  autoCommands: autoCommands.join(' '),
+  handlers: {
+    enter: onEnter,
+    moveOutOf: dir => {
+      if (dir === MQ.R) moveDown(); else moveUp();
+    },
+    upOutOf: moveUp,
+    downOutOf: moveDown,
+    deleteOutOf: deleteField
+  }
+});
+MQ.config(configOptions());
 
 $(()=>{
   console.log('page loaded');
   // create new field and push to []fields
-  var field = MQ.MathField(document.getElementById('field1'), configOptions());
+  var field = MQ.MathField(document.getElementById('field1'));
   fields.push({field: field, id: 'field1'});
   field.focus();
 
@@ -122,6 +122,26 @@ $(()=>{
     importFrom(localStorage.autoBackup0);
   });
 
+  $('#btnSetAuto').click(evt => {
+    $('#autoCommands').css('display', 'block');
+  });
+  $('#btnHideAutos').click(evt => {
+    $('#autoCommands').css('display', 'none');
+  });
+  $('#btnAddAuto').click(evt => {
+    let val = $('#inputAddAuto').val();
+    if (!autoCommands.includes(val)) autoCommands.push(val);
+    $('#inputAddAuto').val('');
+    saveAutos();
+  });
+  $('#btnRemoveAuto').click(evt => {
+    let val = $('#inputRemoveAuto').val();
+    if (autoCommands.includes(val)) autoCommands.splice(autoCommands.indexOf(val), 1);
+    $('#inputRemoveAuto').val('');
+    saveAutos();
+  });
+  $('#currentAutos').text(autoCommands.join(' '))
+
   setInterval(function () {
     localStorage.autoBackup0 = String(localStorage.autoBackup1)
     localStorage.autoBackup1 = exportLines();
@@ -134,7 +154,7 @@ function importFrom(input) {
     if (line[0] === 'f') {
       let elem = $(`<div class="field" id="field${++numFields}"></div>`);
       $('main').append(elem);
-      let field = MQ.MathField(document.getElementById('field'+numFields), configOptions());
+      let field = MQ.MathField(document.getElementById('field'+numFields));
       fields.push({field: field, id: 'field'+numFields});
       $('.field').focusin(updateFocus);
       if(!borders) elem.css('border','none');
@@ -168,7 +188,7 @@ function updateFocus() {
 function onEnter() {
   let elem = $(`<div class="field" id="field${++numFields}"></div>`);
   elem.insertAfter(document.getElementById(currentField));
-  let field = MQ.MathField(document.getElementById('field'+numFields), configOptions());
+  let field = MQ.MathField(document.getElementById('field'+numFields));
   field.focus();
   fields.splice(currentIndex+1, 0, {field: field, id: 'field'+numFields});
   $('.field').focusin(updateFocus);
@@ -199,4 +219,9 @@ function deleteField(ctrlPressed = -1) {
     fields[Math.max(currentIndex-1, 0)].field.focus();
     if (currentField[0] === 'f') numFields--; else numComments--;
   }
+}
+function saveAutos() {
+  localStorage.autoCommands = JSON.stringify(autoCommands);
+  $('#currentAutos').text(autoCommands.join(' '))
+  MQ.config(configOptions());
 }
