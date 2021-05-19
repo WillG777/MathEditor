@@ -2,7 +2,6 @@ var numFields = 1, numComments = 0;
 var borders = true, hidden=false;
 var currentField = 'field1';
 var currentIndex = 0;
-var inputs = {ctrl: false, up: false, down: false, slash: false, enter: false, bs: false, s: false};
 var fields = [];
 var autoCommands = localStorage.autoCommands ? JSON.parse(localStorage.autoCommands) : ['pi', 'theta', 'sqrt', 'sum', 'infty'];
 
@@ -30,55 +29,39 @@ $(()=>{
   field.focus();
 
   // keyboard handlers
+
   $(document).on('keydown', evt => {
-    if (evt.key === 'Control') inputs.ctrl = true;
-    else if (evt.key === 'ArrowUp') inputs.up = true;
-    else if (evt.key === 'ArrowDown') inputs.down = true;
-    else if (evt.key === '/') inputs.slash = true;
-    else if (evt.key === 'Enter') inputs.enter = true;
-    else if (evt.key === 'Backspace') inputs.bs = true;
-    else if (evt.key === 's') inputs.s = true;
-  });
-  $(document).on('keyup', evt => {
-    if (evt.key === 'Control') inputs.ctrl = false;
-    else if (evt.key === 'ArrowUp') inputs.up = false;
-    else if (evt.key === 'ArrowDown') inputs.down = false;
-    else if (evt.key === '/') inputs.slash = false;
-    else if (evt.key === 'Enter') inputs.enter = false;
-    else if (evt.key === 'Backspace') inputs.bs = false;
-    else if (evt.key === 's') inputs.s = false;
+    switch(evt.key) {
+      case '/': case '?':
+        if (!evt.ctrlKey) break;
+        let elem = $(`<input type="text" class="comment" id="comment${++numComments}">`);
+        elem.css('border', borders ? '1px solid #ccc' : 'none');
+        elem[evt.shiftKey ? 'insertAfter' : 'insertBefore']($('#'+currentField));
+        elem.focus();
+        currentField = 'comment'+numComments;
+        currentIndex = elem.index();
+        fields.splice(currentIndex, 0, {field: elem, id: 'comment'+numComments});
+        $('.comment').focusin(updateFocus);
+        break;
+      case 'Backspace':
+        if (!evt.ctrlKey) break;
+        deleteField(true);
+        break;
+      case 'Enter':
+        if (currentField[0] === 'c') onEnter();
+        break;
+      case 'ArrowUp':
+        if (evt.ctrlKey) moveUp();
+        break;
+      case 'ArrowDown':
+        if (evt.ctrlKey) moveDown();
+        break;
+      case 's':
+        if (!evt.ctrlKey) break;
+        localStorage.manualBackup = exportLines();
+    }
   });
   $('.field').focusin(updateFocus);
-
-  // functions based on keyboard inputs
-  setInterval(function(){
-    if (inputs.ctrl && inputs.slash) {
-      inputs.slash = false;
-      let elem = $(`<input type="text" class="comment" id="comment${++numComments}">`);
-      elem.css('border', borders ? '1px solid #ccc' : 'none');
-      elem.insertBefore($('#'+currentField));
-      elem.focus();
-      fields.splice(currentIndex, 0, {field: elem, id: 'comment'+numComments});
-      currentField = 'comment'+numComments;
-      $('.comment').focusin(updateFocus);
-    }
-    if (inputs.ctrl && inputs.bs) {
-      deleteField(true);
-    }
-    if (inputs.enter && currentField[0] === 'c') {
-      inputs.enter = false;
-      onEnter();
-    }
-    if (inputs.ctrl && inputs.up) {
-      moveUp();
-    }
-    else if (inputs.ctrl && inputs.down) {
-      moveDown();
-    }
-    if (inputs.ctrl && inputs.s) {
-      localStorage.manualBackup = exportLines();
-    }
-  },16);
 
   $('#btnBorder').click(evt => {
     if (borders) {
@@ -188,36 +171,33 @@ function updateFocus() {
 function onEnter() {
   let elem = $(`<div class="field" id="field${++numFields}"></div>`);
   elem.insertAfter(document.getElementById(currentField));
-  let field = MQ.MathField(document.getElementById('field'+numFields));
+  let field = MQ.MathField(elem[0]);
   field.focus();
-  fields.splice(currentIndex+1, 0, {field: field, id: 'field'+numFields});
   $('.field').focusin(updateFocus);
   currentField = elem.attr('id');
   currentIndex = elem.index();
+  fields.splice(currentIndex, 0, {field: field, id: 'field'+numFields});
   if(!borders) elem.css('border','none');
 }
 function moveUp() {
-  inputs.up = false;
   if (currentIndex === 0) return;
   currentIndex--;
   fields[currentIndex].field.focus();
   currentField = fields[currentIndex].id;
 }
 function moveDown() {
-  inputs.down = false;
-  if (currentIndex === numFields+numComments-1) return;
+  if (currentIndex === fields.length-1) return;
   currentIndex++;
   fields[currentIndex].field.focus();
   currentField = fields[currentIndex].id;
 }
 function deleteField(ctrlPressed = -1) {
-  inputs.bs = false;
   if (ctrlPressed !== -1 || !fields[currentIndex].field.latex()) {
     if (fields.length === 1) return;
     $('#'+currentField).remove();
     fields.splice(currentIndex, 1);
     fields[Math.max(currentIndex-1, 0)].field.focus();
-    if (currentField[0] === 'f') numFields--; else numComments--;
+    // if (currentField[0] === 'f') numFields--; else numComments--;
   }
 }
 function saveAutos() {
